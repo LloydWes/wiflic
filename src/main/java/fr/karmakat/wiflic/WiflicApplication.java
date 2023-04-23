@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 
 @SpringBootApplication
-@ComponentScan("fr.karmakat.wiflic.webService")
 public class WiflicApplication {
 
 	public static void main(String[] args) {
