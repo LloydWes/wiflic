@@ -1,7 +1,13 @@
 package fr.karmakat.wiflic.wsClient;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.karmakat.wiflic.domain.DeviceEvent;
 import fr.karmakat.wiflic.token.TokenNegotiatior;
 import jakarta.annotation.PostConstruct;
+import org.apache.juli.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,6 +22,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 
@@ -36,16 +43,30 @@ public class SpringWebsocketWithoutStompClient {
             webSocketHttpHeaders.add("X-Fbx-App-Auth", session_token);
             webSocketHttpHeaders.add("Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits");
             webSocketHttpHeaders.add("Sec-WebSocket-Version", "13");
-//            webSocketHttpHeaders.add("Connection", "Upgrade");
-//            webSocketHttpHeaders.add("Upgrade", "websocket");
             webSocketHttpHeaders.add("Origin", "http://mafreebox.freebox.fr");
             webSocketHttpHeaders.add("Host", "mafreebox.freebox.fr");
             webSocketHttpHeaders.add("Pragma", "no-cache");
             WebSocketClient webSocketClient = new StandardWebSocketClient();
             this.webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
                 @Override
-                public void handleTextMessage(WebSocketSession session, TextMessage message) {
+                public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
                     LOGGER.info("received message - " + message.getPayload());
+                    final ObjectMapper mapper = new ObjectMapper();
+                    final JsonNode fNode = mapper.readTree(message.getPayload());
+                    final JsonParser parser = mapper.treeAsTokens(fNode);
+                    DeviceEvent device = mapper.readValue(parser, DeviceEvent.class);
+                    if (fNode.has("event")) {
+                        if (fNode.get("event").textValue().equals("host_l3addr_reachable")) {
+                            LOGGER.info("### Reachable");
+                        } else if (fNode.get("event").textValue().equals("host_l3addr_unreachable")) {
+                            LOGGER.info("### Unreachable");
+                        } else {
+                            LOGGER.info("oups");
+                            LOGGER.info(fNode.get("event").toString());
+                        }
+                    } else {
+                        LOGGER.info("### Couldn't find event");
+                    }
                 }
 
                 @Override
