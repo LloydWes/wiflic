@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.karmakat.wiflic.domain.DeviceEvent;
 import fr.karmakat.wiflic.token.TokenNegotiatior;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.apache.juli.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,12 @@ public class SpringWebsocketWithoutStompClient {
     private WebSocketSession webSocketSession;
     public void close() throws IOException {
         this.webSocketSession.close(CloseStatus.NORMAL.withReason("Client asked to close the connection"));
+    }
+    @PreDestroy
+    public void destroy() throws IOException {
+        if (this.webSocketSession.isOpen()) {
+            this.webSocketSession.close(CloseStatus.NORMAL.withReason("Spring application is shuting down"));
+        }
     }
     @PostConstruct
     public void connect() {
@@ -99,3 +106,5 @@ public class SpringWebsocketWithoutStompClient {
 }
 
 // https://www.baeldung.com/executable-jar-with-maven
+
+// https://www.baeldung.com/spring-boot-shutdown
