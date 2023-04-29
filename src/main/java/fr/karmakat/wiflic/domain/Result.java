@@ -1,9 +1,12 @@
 package fr.karmakat.wiflic.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Result {
     public Boolean active;
     public String default_name;
@@ -21,6 +24,7 @@ public class Result {
     public String vendor_name;
     public List<Names> names;
     public L2ident l2ident;
+    public String model;
     public List<L3connectivities> l3connectivities;
 
     public Result() {
@@ -45,6 +49,14 @@ public class Result {
         this.names = names;
         this.l2ident = l2ident;
         this.l3connectivities = l3connectivities;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 
     public Boolean getActive() {

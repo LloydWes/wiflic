@@ -97,3 +97,5 @@ public class SpringWebsocketWithoutStompClient {
         }
     }
 }
+
+// https://www.baeldung.com/executable-jar-with-maven
